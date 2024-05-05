@@ -1,0 +1,12 @@
+FROM alpine:latest
+
+COPY . .
+
+RUN echo "@personal https://dl-cdn.alpinelinux.org/alpine/v3.14/community" >> "/etc/apk/repositories"
+RUN ["apk", "-U", "upgrade"]
+RUN ["apk", "add", "go@personal"]
+
+RUN ["go", "build"]
+
+EXPOSE 9000
+ENTRYPOINT ["./server"]

@@ -1,0 +1,57 @@
+services:
+  frontend:
+    container_name: "frontend"
+    build:
+      context: "./example-frontend/"
+      dockerfile: "Containerfile.frontend"
+    depends_on:
+      - "backend"
+
+  backend:
+    container_name: "backend"
+    build:
+      context: "./example-backend/"
+      dockerfile: "Containerfile.backend"
+    environment:
+      - "PORT=9000"
+      - "REQUEST_ORIGIN=http://localhost:9090"
+      - "REDIS_HOST=cache"
+      - "POSTGRES_HOST=database"
+      - "POSTGRES_USER=testuser"
+      - "POSTGRES_PASSWORD=Pa$$w0rd12345"
+      - "POSTGRES_DATABASE=postgres_db"
+    depends_on:
+      - "cache"
+      - "database"
+
+  cache:
+    container_name: "cache"
+    image: "docker.io/redis:alpine"
+
+  database:
+    container_name: "database"
+    image: "docker.io/postgres:alpine"
+    environment:
+      - "POSTGRES_USER=testuser"
+      - "POSTGRES_PASSWORD=Pa$$w0rd12345"
+      - "POSTGRES_DB=postgres_db"
+    volumes:
+      - type: "volume"
+        source: "database"
+        target: "/var/lib/postgresql/data"
+    restart: "unless-stopped"
+
+  proxy:
+    container_name: "proxy"
+    image: "docker.io/nginx:stable-alpine-slim"
+    volumes:
+      - type: "bind"
+        source: "./nginx.conf"
+        target: "/etc/nginx/nginx.conf"
+    ports:
+      - "9090:9090"
+    depends_on:
+      - "frontend"
+
+volumes:
+  database:

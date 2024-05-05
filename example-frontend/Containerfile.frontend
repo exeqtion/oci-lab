@@ -1,0 +1,17 @@
+FROM alpine:latest
+
+ENV REACT_APP_BACKEND_URL="http://localhost:9090"
+
+RUN echo "@personal https://dl-cdn.alpinelinux.org/alpine/v3.16/main" >> "/etc/apk/repositories"
+RUN echo "@personal https://dl-cdn.alpinelinux.org/alpine/v3.16/community" >> "/etc/apk/repositories"
+RUN ["apk", "-U", "upgrade"]
+RUN ["apk", "add", "nodejs@personal"]
+RUN ["apk", "add", "npm@personal"]
+
+COPY . .
+RUN ["npm", "install"]
+RUN ["npm", "run", "build"]
+RUN ["npm", "install", "-g", "serve"]
+
+EXPOSE 5000
+ENTRYPOINT ["serve", "-s", "-l", "5000", "build"]
